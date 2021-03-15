@@ -1,0 +1,40 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@1.4.0
+  aws-ecr: circleci/aws-ecr@6.15.3
+
+jobs:
+  add_tag:
+    executor: aws-cli/default
+    steps:
+      - checkout
+      - aws-cli/setup:
+        profile-name: default
+      - run:
+          command: |
+            echo $CIRCLE_TAG
+            echo $CIRCLE_SHA1
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
+            MANIFEST=$(aws ecr batch-get-image --repository-name app1 --image-ids imageTag=$CIRCLE_SHA1 --query 'images[].imageManifest' --output text)
+            aws ecr put-image --repository-name app1 --image-tag ${CIRCLE_TAG} --image-manifest "$MANIFEST"      
+
+workflows:
+  build_and_push:
+    jobs:
+      - aws-ecr/build-and-push-image:
+          context: app1
+          create-repo: false
+          dockerfile: Dockerfile
+          path: ./app1
+          repo: app1
+          tag: "$CIRCLE_SHA1"
+  add_tag:
+    jobs:
+      - add_tag:
+          context: app1
+          filters:
+            tags:
+              only: /^v\d+\.\d+\.\d+$/
+            branches:
+              ignore: /.*/
