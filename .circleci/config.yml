@@ -37,4 +37,5 @@ workflows:
             tags:
               only: /^v\d+\.\d+\.\d+$/
             branches:
-              ignore: /.*/
+              #ignore: /.*/
+              only: tag-trigger
