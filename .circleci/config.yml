@@ -7,6 +7,10 @@ orbs:
 jobs:
   add_tag:
     executor: aws-cli/default
+    parameters:
+      target_tag:
+        type: string
+        default: "$(git rev-parse --short HEAD)"
     steps:
       - checkout
       - aws-cli/setup:
@@ -14,9 +18,12 @@ jobs:
       - run:
           command: |
             echo $CIRCLE_TAG
-            echo $CIRCLE_SHA1
+            echo ${CIRCLE_SHA1:0:7}
+            echo $(git rev-parse --short HEAD)
+            echo << parameters.target_tag >>
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
-            MANIFEST=$(aws ecr batch-get-image --repository-name app1 --image-ids imageTag=$CIRCLE_SHA1 --query 'images[].imageManifest' --output text)
+            #MANIFEST=$(aws ecr batch-get-image --repository-name app1 --image-ids imageTag=$CIRCLE_SHA1 --query 'images[].imageManifest' --output text)
+            MANIFEST=$(aws ecr batch-get-image --repository-name app1 --image-ids imageTag=<< parameters.target_tag >> --query 'images[].imageManifest' --output text)
             aws ecr put-image --repository-name app1 --image-tag ${CIRCLE_TAG} --image-manifest "$MANIFEST"      
 
 workflows:
