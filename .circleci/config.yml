@@ -29,12 +29,12 @@ workflows:
           path: ./app1
           repo: app1
           tag: "$CIRCLE_SHA1"
-  add_tag:
-    jobs:
-      - add_tag:
-          context: app1
-          filters:
-            tags:
-              only: /^v\d+\.\d+\.\d+$/
-            branches:
-              ignore: /.*/
+  #add_tag:
+  #  jobs:
+  #    - add_tag:
+  #        context: app1
+  #        filters:
+  #          tags:
+  #            only: /^v\d+\.\d+\.\d+$/
+  #          branches:
+  #            ignore: /.*/
