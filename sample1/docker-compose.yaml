@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  front:
+    build: ./front-nginx/
+    environment:
+      BACK_HOST: back
+      BACK_PORT: 8080
+    ports:
+    - 80:80
+  back:
+    build: ./back-go/
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: sample
+    ports:
+    - 8080
+  db:
+    build: ./db-mysql/
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sample
+      MYSQL_USER: user1
+      MYSQL_PASSWORD: user1
+      TZ: 'Asia/Tokyo'
+    volumes:
+    - ./db-mysql/data:/var/lib/mysql
+    - ./db-mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    ports:
+    - 3306
